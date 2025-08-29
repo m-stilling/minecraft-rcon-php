@@ -1,5 +1,9 @@
 <?php namespace Stilling\MinecraftRcon;
 
+use Stilling\MinecraftRcon\Exceptions\AuthException;
+use Stilling\MinecraftRcon\Exceptions\ConnectionException;
+use Stilling\MinecraftRcon\Exceptions\TimeoutException;
+
 class Rcon
 {
 	protected mixed $socket;
@@ -18,18 +22,33 @@ class Rcon
 		protected int $timeout = 3,
 	) {}
 
+	/**
+	 * @throws AuthException
+	 * @throws ConnectionException
+	 * @throws TimeoutException
+	 */
 	public function connect(): void {
+		if (isset($this->socket)) {
+			return;
+		}
+
+		set_error_handler(function () {}, E_WARNING);
 		$this->socket = fsockopen($this->host, $this->port, $errorCode, $errorMessage, $this->timeout);
+		restore_error_handler();
 
 		if (!$this->socket) {
-			throw new \Exception("Failed to connect: ($errorCode) $errorMessage");
+			unset($this->socket);
+			throw new ConnectionException($errorMessage, $errorCode);
 		}
 
 		stream_set_timeout($this->socket, 3);
-
 		$this->authorize();
 	}
 
+	/**
+	 * @throws AuthException
+	 * @throws TimeoutException
+	 */
 	protected function authorize(): void {
 		$this->writePacket(++$this->packetId, self::PACKET_TYPE_AUTH, $this->password);
 
@@ -44,7 +63,7 @@ class Rcon
 		}
 
 		$this->disconnect();
-		throw new \Exception("Failed to authorize");
+		throw new AuthException("Failed to authorize");
 	}
 
 	public function disconnect(): void {
@@ -57,9 +76,15 @@ class Rcon
 		return $this->authorized;
 	}
 
-	public function sendCommand($command): string {
+	/**
+	 * @param string $command
+	 * @return string
+	 * @throws ConnectionException
+	 * @throws TimeoutException
+	 */
+	public function sendCommand(string $command): string {
 		if (!$this->isConnected()) {
-			throw new \Exception("Not authorized");
+			throw new ConnectionException("Not connected");
 		}
 
 		// Send command packet
@@ -78,7 +103,7 @@ class Rcon
 			$duration = microtime(true) - $start;
 
 			if ($duration > $this->timeout) {
-				throw new \RuntimeException("Timeout while reading");
+				throw new TimeoutException("Timeout while reading");
 			}
 
 			$packet = $this->readPacket();
@@ -108,6 +133,11 @@ class Rcon
 		fwrite($this->socket, $packet, strlen($packet));
 	}
 
+	/**
+	 * @param int $length
+	 * @return string
+	 * @throws TimeoutException
+	 */
 	protected function readBytes(int $length): string {
 		$data = "";
 		$start = microtime(true);
@@ -116,13 +146,13 @@ class Rcon
 			$duration = microtime(true) - $start;
 
 			if ($duration > $this->timeout) {
-				throw new \RuntimeException("Timeout while reading");
+				throw new TimeoutException("Timeout while reading");
 			}
 
 			$chunk = fread($this->socket, $length - strlen($data));
 
 			if ($chunk === false || $chunk === "") {
-				throw new \RuntimeException("Socket closed or error while reading");
+				throw new TimeoutException("Socket closed or error while reading");
 			}
 
 			$data .= $chunk;
@@ -131,6 +161,10 @@ class Rcon
 		return $data;
 	}
 
+	/**
+	 * @return array
+	 * @throws TimeoutException
+	 */
 	protected function readPacket(): array {
 		// Read packet size
 		$sizeBytes = $this->readBytes(4);

@@ -9,6 +9,7 @@ class FakeServer {
 	public function __construct(
 		protected string $host = "127.0.0.1",
 		protected string $port = "25575",
+		protected string $password = "1234",
 	) {}
 
 	public function listen(): void {
@@ -34,7 +35,12 @@ class FakeServer {
 				if (strlen($data) < $size) break;
 
 				$req = unpack('V1id/V1type/a*body', $data);
-				$req["body"] = trim($req["body"], "\x00");
+
+				if (!is_array($req)) {
+					throw new \Exception("Failed to unpack packet");
+				}
+
+				$req["body"] = rtrim($req["body"], "\x00");
 
 				echo "Received packet id={$req['id']} type={$req['type']} body={$req['body']}\n";
 
@@ -60,13 +66,29 @@ class FakeServer {
 	}
 
 	protected function handleAuth($conn, array $req): void {
-		$this->sendResponse($conn, $req["id"], Rcon::PACKET_TYPE_AUTH_RESPONSE, "OK");
+		$isOk = $req["body"] === $this->password ? "OK" : "FAIL";
+		echo "Auth request using {$req['body']} $isOk\n";
+
+		$this->sendResponse(
+			$conn,
+			$req["body"] === $this->password
+				? $req["id"]
+				: 4294967295,
+			Rcon::PACKET_TYPE_AUTH_RESPONSE,
+		);
 	}
 
 	protected function handleExecCmd($conn, array $req): void {
 		if ($req["body"] === "stop") {
 			$this->shouldStop = true;
 			$this->sendResponse($conn, $req["id"], Rcon::PACKET_TYPE_RESPONSE_VALUE, "Server stopped");
+			return;
+		}
+
+		if (str_starts_with($req["body"], "force-timeout ")) {
+			$delay = (int) substr($req["body"], strlen("force-timeout "));
+			sleep($delay);
+			$this->sendResponse($conn, $req["id"], Rcon::PACKET_TYPE_RESPONSE_VALUE);
 			return;
 		}
 
@@ -80,6 +102,11 @@ class FakeServer {
 
 	protected function sendResponse($conn, int $reqId, int $type, string $body = ""): void {
 		$chunks = str_split($body, 100);
+
+		if (count($chunks) === 0) {
+			$chunks[] = "";
+		}
+
 		$chunkCount = count($chunks);
 
 		echo "Response chunk count: $chunkCount\n";
@@ -88,9 +115,9 @@ class FakeServer {
 			// RCON body is null-terminated
 			$responseBody = $chunk . "\x00\x00";
 			// id + type + body
-			$respSize = 4 + 4 + strlen($responseBody);
+			$responseSize = 4 + 4 + strlen($responseBody);
 
-			$packet  = pack('V', $respSize);
+			$packet  = pack('V', $responseSize);
 			$packet .= pack('V', $reqId);
 			$packet .= pack('V', $type);
 			$packet .= $responseBody;
