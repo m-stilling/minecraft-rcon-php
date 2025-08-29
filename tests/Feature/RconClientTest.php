@@ -34,6 +34,22 @@ test("multi packet response", function () {
 	$rcon->disconnect();
 });
 
+test("allows disconnecting and reconnecting", function () {
+	$rcon = new Rcon(
+		"127.0.0.1",
+		"25575",
+		"1234",
+		1,
+	);
+	$rcon->connect();
+	$rcon->disconnect();
+	$rcon->connect();
+
+	expect($rcon->sendCommand("echo hello"))->toEqual("hello");
+
+	$rcon->disconnect();
+});
+
 test("throws if sending command before connecting", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
@@ -41,7 +57,19 @@ test("throws if sending command before connecting", function () {
 		"1234",
 		1,
 	);
-	expect(fn () => $rcon->sendCommand("echo hello"))->toThrow(ConnectionException::class);
+	expect(fn () => $rcon->sendCommand("echo hello"))->toThrow(ConnectionException::class, "Not connected");
+});
+
+test("throws if already connected", function () {
+	$rcon = new Rcon(
+		"127.0.0.1",
+		"25575",
+		"1234",
+		1,
+	);
+	$rcon->connect();
+
+	expect(fn () => $rcon->connect())->toThrow(ConnectionException::class, "Already connected");
 });
 
 test("throws if cant connect", function () {
@@ -61,7 +89,7 @@ test("throws if password is incorrect", function () {
 		"12345",
 		1,
 	);
-	expect(fn () => $rcon->connect())->toThrow(AuthException::class);;
+	expect(fn () => $rcon->connect())->toThrow(AuthException::class, "Failed to authorize");;
 });
 
 test("throws on timeout", function () {

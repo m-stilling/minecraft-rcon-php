@@ -29,7 +29,7 @@ class Rcon
 	 */
 	public function connect(): void {
 		if (isset($this->socket)) {
-			return;
+			throw new ConnectionException("Already connected");
 		}
 
 		set_error_handler(function () {}, E_WARNING);
@@ -69,6 +69,7 @@ class Rcon
 	public function disconnect(): void {
 		if ($this->socket) {
 			fclose($this->socket);
+			unset($this->socket);
 		}
 	}
 
