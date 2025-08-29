@@ -1,0 +1,33 @@
+{
+	"$schema": "https://getcomposer.org/schema.json",
+	"name": "stilling/minecraft-rcon",
+	"description": "Lightweight Minecraft RCON client supporting multi-packet responses.",
+	"keywords": ["minecraft", "rcon"],
+	"license": "MIT",
+	"require": {
+		"php": "^8.3|^8.4"
+	},
+	"require-dev": {
+		"pestphp/pest": "^v4.0.3"
+	},
+	"autoload": {
+		"psr-4": {
+			"Stilling\\MinecraftRcon\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"test": "pest"
+	},
+	"config": {
+		"allow-plugins": {
+			"pestphp/pest-plugin": true
+		}
+	},
+	"minimum-stability": "stable",
+	"prefer-stable": true
+}
