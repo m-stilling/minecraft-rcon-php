@@ -5,7 +5,7 @@ use Stilling\MinecraftRcon\Exceptions\ConnectionException;
 use Stilling\MinecraftRcon\Exceptions\TimeoutException;
 use Stilling\MinecraftRcon\Rcon;
 
-test("short response", function () {
+test("single packet response", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
 		"25575",
@@ -19,7 +19,7 @@ test("short response", function () {
 	$rcon->disconnect();
 });
 
-test("long response", function () {
+test("multi packet response", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
 		"25575",
