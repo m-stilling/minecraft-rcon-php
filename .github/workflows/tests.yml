@@ -70,3 +70,6 @@ jobs:
 
       - name: Run tests
         run: ./vendor/bin/pest
+
+      - name: Log fake server output
+        run: cat fake-server.log
