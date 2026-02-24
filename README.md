@@ -1,6 +1,6 @@
 # Minecraft RCON Client
 
-[![tests](https://github.com/m-stilling/minecraft-rcon-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/m-stilling/minecraft-rcon-php/actions/workflows/tests.yml)
+[![tests](https://github.com/m-stilling/minecraft-rcon-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/m-stilling/minecraft-rcon-php/actions/workflows/tests.yml) [![Packagist Version](https://img.shields.io/packagist/v/stilling/minecraft-rcon)](https://packagist.org/packages/stilling/minecraft-rcon) 
 
 Lightweight Minecraft RCON client supporting multi-packet responses. Based on [PHP-Minecraft-Rcon](https://github.com/thedudeguy/PHP-Minecraft-Rcon) by [thedudeguy](https://github.com/thedudeguy).
 
