@@ -8,6 +8,9 @@ Lightweight Minecraft RCON client supporting multi-packet responses. Based on [P
 composer require stilling/minecraft-rcon
 ```
 
+> [!TIP]
+> Need to make sense of the SNBT (NBT) data these commands return? [`stilling/snbt-parser`](https://packagist.org/packages/stilling/snbt-parser) is a lightweight parser that turns the output of commands like `data get ...` straight into native PHP values.
+
 ```php
 use Stilling\MinecraftRcon\Rcon;
 
