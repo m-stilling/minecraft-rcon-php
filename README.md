@@ -13,7 +13,7 @@ use Stilling\MinecraftRcon\Rcon;
 
 $rcon = new Rcon(
     "mc.example.com",
-    "25565",
+    25565,
     "super-secret-password",
 );
 $rcon->connect();

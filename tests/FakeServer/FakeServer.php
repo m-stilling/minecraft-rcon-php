@@ -8,7 +8,7 @@ class FakeServer {
 
 	public function __construct(
 		protected string $host = "127.0.0.1",
-		protected string $port = "25575",
+		protected int $port = 25575,
 		protected string $password = "1234",
 	) {}
 

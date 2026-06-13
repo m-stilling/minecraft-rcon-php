@@ -8,7 +8,7 @@ use Stilling\MinecraftRcon\Rcon;
 test("single packet response", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
@@ -22,7 +22,7 @@ test("single packet response", function () {
 test("multi packet response", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
@@ -37,7 +37,7 @@ test("multi packet response", function () {
 test("allows disconnecting and reconnecting", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
@@ -53,7 +53,7 @@ test("allows disconnecting and reconnecting", function () {
 test("reports connection state", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
@@ -69,7 +69,7 @@ test("reports connection state", function () {
 test("throws if sending command before connecting", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
@@ -79,7 +79,7 @@ test("throws if sending command before connecting", function () {
 test("throws if already connected", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
@@ -91,7 +91,7 @@ test("throws if already connected", function () {
 test("throws if cant connect", function () {
 	$rcon = new Rcon(
 		"127.0.0.2",
-		"25576",
+		25576,
 		"1234",
 		1,
 	);
@@ -101,7 +101,7 @@ test("throws if cant connect", function () {
 test("throws if password is incorrect", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"12345",
 		1,
 	);
@@ -111,7 +111,7 @@ test("throws if password is incorrect", function () {
 test("throws on timeout", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		$timeout = 1,
 	);
@@ -123,7 +123,7 @@ test("throws on timeout", function () {
 test("stop", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
-		"25575",
+		25575,
 		"1234",
 		1,
 	);
