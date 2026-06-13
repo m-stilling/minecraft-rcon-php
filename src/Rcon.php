@@ -47,6 +47,7 @@ class Rcon
 
 	/**
 	 * @throws AuthException
+	 * @throws ConnectionException
 	 * @throws TimeoutException
 	 */
 	protected function authorize(): void {
@@ -131,8 +132,19 @@ class Rcon
 		$packetSize = strlen($packet);
 		$packet = pack("V", $packetSize).$packet;
 
-		// Write packet
-		fwrite($this->socket, $packet, strlen($packet));
+		// Write packet, handling partial writes
+		$written = 0;
+		$total = strlen($packet);
+
+		while ($written < $total) {
+			$bytes = fwrite($this->socket, substr($packet, $written));
+
+			if ($bytes === false || $bytes === 0) {
+				throw new ConnectionException("Failed to write to socket");
+			}
+
+			$written += $bytes;
+		}
 	}
 
 	/**
