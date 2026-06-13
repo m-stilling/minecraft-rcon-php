@@ -6,7 +6,7 @@ use Stilling\MinecraftRcon\Exceptions\TimeoutException;
 
 class Rcon
 {
-	protected mixed $socket;
+	protected mixed $socket = null;
 	protected bool $authorized = false;
 	protected int $packetId = 0;
 
@@ -32,12 +32,12 @@ class Rcon
 			throw new ConnectionException("Already connected");
 		}
 
-		set_error_handler(function () {}, E_WARNING);
+		set_error_handler(static fn (): bool => true, E_WARNING);
 		$this->socket = fsockopen($this->host, $this->port, $errorCode, $errorMessage, $this->timeout);
 		restore_error_handler();
 
 		if (!$this->socket) {
-			unset($this->socket);
+			$this->socket = null;
 			throw new ConnectionException($errorMessage, $errorCode);
 		}
 
@@ -70,7 +70,7 @@ class Rcon
 	public function disconnect(): void {
 		if (isset($this->socket)) {
 			fclose($this->socket);
-			unset($this->socket);
+			$this->socket = null;
 		}
 		$this->authorized = false;
 	}
@@ -123,6 +123,9 @@ class Rcon
 		return $response;
 	}
 
+	/**
+	 * @throws ConnectionException
+	 */
 	protected function writePacket(int $packetId, int $packetType, string $packetBody): void {
 		// Create packet
 		$packet = pack("VV", $packetId, $packetType);
@@ -163,7 +166,7 @@ class Rcon
 				throw new TimeoutException("Timeout while reading");
 			}
 
-			$chunk = fread($this->socket, $length - strlen($data));
+			$chunk = fread($this->socket, max(1, $length - strlen($data)));
 
 			if ($chunk === false || $chunk === "") {
 				throw new TimeoutException("Socket closed or error while reading");
@@ -176,18 +179,31 @@ class Rcon
 	}
 
 	/**
-	 * @return array
+	 * @return array{id: int, type: int, body: string}
+	 * @throws ConnectionException
 	 * @throws TimeoutException
 	 */
 	protected function readPacket(): array {
 		// Read packet size
 		$sizeBytes = $this->readBytes(4);
-		$size = unpack("V1size", $sizeBytes)["size"];
+		$sizeData = unpack("V1size", $sizeBytes);
+
+		if ($sizeData === false) {
+			throw new ConnectionException("Failed to unpack packet size");
+		}
 
 		// Read packet
-		$packetBytes = $this->readBytes($size);
+		$packetBytes = $this->readBytes((int) $sizeData["size"]);
 		$packetData = unpack("V1id/V1type/a*body", $packetBytes);
 
-		return $packetData;
+		if ($packetData === false) {
+			throw new ConnectionException("Failed to unpack packet");
+		}
+
+		return [
+			"id" => (int) $packetData["id"],
+			"type" => (int) $packetData["type"],
+			"body" => (string) $packetData["body"],
+		];
 	}
 }
