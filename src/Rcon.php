@@ -41,7 +41,7 @@ class Rcon
 			throw new ConnectionException($errorMessage, $errorCode);
 		}
 
-		stream_set_timeout($this->socket, 3);
+		stream_set_timeout($this->socket, $this->timeout);
 		$this->authorize();
 	}
 
