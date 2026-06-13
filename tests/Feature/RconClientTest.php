@@ -2,6 +2,7 @@
 
 use Stilling\MinecraftRcon\Exceptions\AuthException;
 use Stilling\MinecraftRcon\Exceptions\ConnectionException;
+use Stilling\MinecraftRcon\Exceptions\PacketException;
 use Stilling\MinecraftRcon\Exceptions\TimeoutException;
 use Stilling\MinecraftRcon\Rcon;
 
@@ -106,6 +107,25 @@ test("throws if password is incorrect", function () {
 		1,
 	);
 	expect(fn () => $rcon->connect())->toThrow(AuthException::class, "Failed to authorize");;
+});
+
+test("throws when command exceeds max packet size", function () {
+	$rcon = new Rcon(
+		"127.0.0.1",
+		25575,
+		"1234",
+		1,
+	);
+	$rcon->connect();
+
+	// 1446 bytes is the largest command body that fits the 1460-byte packet.
+	$atLimit = str_repeat("a", 1446 - strlen("echo "));
+	expect($rcon->sendCommand("echo " . $atLimit))->toEqual($atLimit);
+
+	$overLimit = str_repeat("a", 1447 - strlen("echo "));
+	expect(fn () => $rcon->sendCommand("echo " . $overLimit))->toThrow(PacketException::class);
+
+	$rcon->disconnect();
 });
 
 test("throws on timeout", function () {

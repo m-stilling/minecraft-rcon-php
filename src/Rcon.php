@@ -2,6 +2,7 @@
 
 use Stilling\MinecraftRcon\Exceptions\AuthException;
 use Stilling\MinecraftRcon\Exceptions\ConnectionException;
+use Stilling\MinecraftRcon\Exceptions\PacketException;
 use Stilling\MinecraftRcon\Exceptions\TimeoutException;
 
 class Rcon
@@ -15,6 +16,11 @@ class Rcon
 	const int PACKET_TYPE_EXEC_CMD = 2;
 	const int PACKET_TYPE_RESPONSE_VALUE = 0;
 
+	// Minecraft reads each RCON request into a fixed 1460-byte buffer, so the
+	// whole packet (length prefix + id + type + body + two null terminators)
+	// must fit within it. That caps the command body at 1446 bytes.
+	const int MAX_PACKET_SIZE = 1460;
+
 	public function __construct(
 		protected string $host,
 		protected int $port,
@@ -25,6 +31,7 @@ class Rcon
 	/**
 	 * @throws AuthException
 	 * @throws ConnectionException
+	 * @throws PacketException
 	 * @throws TimeoutException
 	 */
 	public function connect(): void {
@@ -48,6 +55,7 @@ class Rcon
 	/**
 	 * @throws AuthException
 	 * @throws ConnectionException
+	 * @throws PacketException
 	 * @throws TimeoutException
 	 */
 	protected function authorize(): void {
@@ -83,6 +91,7 @@ class Rcon
 	 * @param string $command
 	 * @return string
 	 * @throws ConnectionException
+	 * @throws PacketException
 	 * @throws TimeoutException
 	 */
 	public function sendCommand(string $command): string {
@@ -125,6 +134,7 @@ class Rcon
 
 	/**
 	 * @throws ConnectionException
+	 * @throws PacketException
 	 */
 	protected function writePacket(int $packetId, int $packetType, string $packetBody): void {
 		// Create packet
@@ -134,6 +144,16 @@ class Rcon
 		// Set packet size
 		$packetSize = strlen($packet);
 		$packet = pack("V", $packetSize).$packet;
+
+		// Reject packets the server cannot read. Minecraft would silently drop
+		// the connection, surfacing later as a confusing read failure.
+		if (strlen($packet) > self::MAX_PACKET_SIZE) {
+			$maxBodySize = self::MAX_PACKET_SIZE - 14;
+			throw new PacketException(
+				"Packet of " . strlen($packet) . " bytes exceeds the Minecraft RCON limit of "
+				. self::MAX_PACKET_SIZE . " bytes (command body may be at most {$maxBodySize} bytes)"
+			);
+		}
 
 		// Write packet, handling partial writes
 		$written = 0;

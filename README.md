@@ -24,3 +24,7 @@ var_dump($response);
 
 $rcon->disconnect();
 ```
+
+## Command length limit
+
+Minecraft reads each RCON request into a fixed 1460-byte buffer, so a command body may be at most **1446 bytes**. Longer commands are rejected with a `PacketException` rather than being sent, since the server would otherwise silently drop the connection.
