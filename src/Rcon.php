@@ -67,10 +67,11 @@ class Rcon
 	}
 
 	public function disconnect(): void {
-		if ($this->socket) {
+		if (isset($this->socket)) {
 			fclose($this->socket);
 			unset($this->socket);
 		}
+		$this->authorized = false;
 	}
 
 	public function isConnected(): bool {

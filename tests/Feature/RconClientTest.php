@@ -50,6 +50,22 @@ test("allows disconnecting and reconnecting", function () {
 	$rcon->disconnect();
 });
 
+test("reports connection state", function () {
+	$rcon = new Rcon(
+		"127.0.0.1",
+		"25575",
+		"1234",
+		1,
+	);
+	expect($rcon->isConnected())->toBeFalse();
+
+	$rcon->connect();
+	expect($rcon->isConnected())->toBeTrue();
+
+	$rcon->disconnect();
+	expect($rcon->isConnected())->toBeFalse();
+});
+
 test("throws if sending command before connecting", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
