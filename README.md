@@ -77,3 +77,12 @@ try {
 ## Command length limit
 
 Minecraft reads each RCON request into a fixed 1460-byte buffer, so a command body may be at most **1446 bytes**. Longer commands are rejected with a `PacketException` rather than being sent, since the server would otherwise silently drop the connection.
+
+## Development
+
+```
+composer test
+composer analyse
+```
+
+`composer test` starts a fake RCON server on `127.0.0.1:25575` and stops it when the tests end. If a server already listens on that port, the tests use it. The fake server writes its output to `fake-server.log`.

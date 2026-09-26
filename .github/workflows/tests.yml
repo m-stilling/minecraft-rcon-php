@@ -54,11 +54,9 @@ jobs:
       - name: Run static analysis
         run: ./vendor/bin/phpstan analyse --no-progress
 
-      - name: Start fake RCON server
-        run: php tests/FakeServer/fake-rcon-server.php > fake-server.log 2>&1 &
-
       - name: Run tests
         run: ./vendor/bin/pest
 
       - name: Log fake server output
+        if: always()
         run: cat fake-server.log
