@@ -24,7 +24,7 @@ class Rcon
 	public function __construct(
 		protected string $host,
 		protected int $port,
-		protected string $password,
+		#[\SensitiveParameter] protected string $password,
 		protected int $timeout = 3,
 	) {}
 
@@ -136,7 +136,7 @@ class Rcon
 	 * @throws ConnectionException
 	 * @throws PacketException
 	 */
-	protected function writePacket(int $packetId, int $packetType, string $packetBody): void {
+	protected function writePacket(int $packetId, int $packetType, #[\SensitiveParameter] string $packetBody): void {
 		// Create packet
 		$packet = pack("VV", $packetId, $packetType);
 		$packet = $packet.$packetBody."\x00\x00";
