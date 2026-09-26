@@ -21,6 +21,11 @@ class Rcon
 	// must fit within it. That caps the command body at 1446 bytes.
 	const int MAX_PACKET_SIZE = 1460;
 
+	// The size field of a response counts id + type + body + two null
+	// terminators. Minecraft splits responses into bodies of at most 4096 bytes.
+	const int MIN_RESPONSE_SIZE = 10;
+	const int MAX_RESPONSE_SIZE = 4106;
+
 	public function __construct(
 		protected string $host,
 		protected int $port,
@@ -207,6 +212,7 @@ class Rcon
 	/**
 	 * @return array{id: int, type: int, body: string}
 	 * @throws ConnectionException
+	 * @throws PacketException
 	 * @throws TimeoutException
 	 */
 	protected function readPacket(): array {
@@ -218,8 +224,20 @@ class Rcon
 			throw new ConnectionException("Failed to unpack packet size");
 		}
 
+		$size = (int) $sizeData["size"];
+
+		// An invalid size means the stream is out of sync, so the connection
+		// cannot be used any more.
+		if ($size < self::MIN_RESPONSE_SIZE || $size > self::MAX_RESPONSE_SIZE) {
+			$this->disconnect();
+			throw new PacketException(
+				"Invalid response packet size of {$size} bytes (expected "
+				. self::MIN_RESPONSE_SIZE . " to " . self::MAX_RESPONSE_SIZE . " bytes)"
+			);
+		}
+
 		// Read packet
-		$packetBytes = $this->readBytes((int) $sizeData["size"]);
+		$packetBytes = $this->readBytes($size);
 		$packetData = unpack("V1id/V1type/a*body", $packetBytes);
 
 		if ($packetData === false) {

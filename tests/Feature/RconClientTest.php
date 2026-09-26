@@ -153,6 +153,19 @@ test("throws and disconnects when the server closes the connection", function ()
 	expect($rcon->isConnected())->toBeFalse();
 });
 
+test("throws and disconnects on an invalid response packet size", function (int $size) {
+	$rcon = new Rcon(
+		"127.0.0.1",
+		25575,
+		"1234",
+		1,
+	);
+	$rcon->connect();
+
+	expect(fn () => $rcon->sendCommand("invalid-size $size"))->toThrow(PacketException::class, "Invalid response packet size of $size bytes");
+	expect($rcon->isConnected())->toBeFalse();
+})->with([9, 4107]);
+
 test("stop", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",

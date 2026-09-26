@@ -96,6 +96,12 @@ class FakeServer {
 			return;
 		}
 
+		if (str_starts_with($req["body"], "invalid-size ")) {
+			$size = (int) substr($req["body"], strlen("invalid-size "));
+			fwrite($conn, pack('V', $size));
+			return;
+		}
+
 		if (str_starts_with($req["body"], "force-timeout ")) {
 			$delay = (int) substr($req["body"], strlen("force-timeout "));
 			sleep($delay);
