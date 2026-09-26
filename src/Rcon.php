@@ -173,6 +173,7 @@ class Rcon
 	/**
 	 * @param int $length
 	 * @return string
+	 * @throws ConnectionException
 	 * @throws TimeoutException
 	 */
 	protected function readBytes(int $length): string {
@@ -189,7 +190,12 @@ class Rcon
 			$chunk = fread($this->socket, max(1, $length - strlen($data)));
 
 			if ($chunk === false || $chunk === "") {
-				throw new TimeoutException("Socket closed or error while reading");
+				if (stream_get_meta_data($this->socket)["timed_out"]) {
+					throw new TimeoutException("Timeout while reading");
+				}
+
+				$this->disconnect();
+				throw new ConnectionException("Connection closed while reading");
 			}
 
 			$data .= $chunk;

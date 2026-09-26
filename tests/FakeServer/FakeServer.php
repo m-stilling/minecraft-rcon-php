@@ -5,6 +5,7 @@ use Stilling\MinecraftRcon\Rcon;
 class FakeServer {
 	protected mixed $server;
 	protected bool $shouldStop = false;
+	protected bool $shouldClose = false;
 
 	public function __construct(
 		protected string $host = "127.0.0.1",
@@ -51,9 +52,14 @@ class FakeServer {
 				} else {
 					echo "Unknown packet type {$req['type']}\n";
 				}
+
+				if ($this->shouldClose) {
+					break;
+				}
 			}
 
 			fclose($conn);
+			$this->shouldClose = false;
 
 			if ($this->shouldStop) {
 				echo "Stopping server...\n";
@@ -82,6 +88,11 @@ class FakeServer {
 		if ($req["body"] === "stop") {
 			$this->shouldStop = true;
 			$this->sendResponse($conn, $req["id"], Rcon::PACKET_TYPE_RESPONSE_VALUE, "Server stopped");
+			return;
+		}
+
+		if ($req["body"] === "disconnect") {
+			$this->shouldClose = true;
 			return;
 		}
 

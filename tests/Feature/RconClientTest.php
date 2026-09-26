@@ -140,6 +140,19 @@ test("throws on timeout", function () {
 	expect(fn () => $rcon->sendCommand("force-timeout $timeout"))->toThrow(TimeoutException::class);;
 });
 
+test("throws and disconnects when the server closes the connection", function () {
+	$rcon = new Rcon(
+		"127.0.0.1",
+		25575,
+		"1234",
+		1,
+	);
+	$rcon->connect();
+
+	expect(fn () => $rcon->sendCommand("disconnect"))->toThrow(ConnectionException::class, "Connection closed while reading");
+	expect($rcon->isConnected())->toBeFalse();
+});
+
 test("stop", function () {
 	$rcon = new Rcon(
 		"127.0.0.1",
