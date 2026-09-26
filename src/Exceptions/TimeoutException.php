@@ -2,6 +2,6 @@
 
 namespace Stilling\MinecraftRcon\Exceptions;
 
-class TimeoutException extends \Exception {
+class TimeoutException extends RconException {
 	//
 }

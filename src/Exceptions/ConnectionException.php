@@ -2,6 +2,6 @@
 
 namespace Stilling\MinecraftRcon\Exceptions;
 
-class ConnectionException extends \Exception {
+class ConnectionException extends RconException {
 	//
 }

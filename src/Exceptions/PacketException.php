@@ -2,6 +2,6 @@
 
 namespace Stilling\MinecraftRcon\Exceptions;
 
-class PacketException extends \Exception {
+class PacketException extends RconException {
 	//
 }
