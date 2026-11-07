@@ -1,8 +1,8 @@
-# Minecraft RCON Client
+# Minecraft RCON Client for PHP
 
 [![tests](https://github.com/m-stilling/minecraft-rcon-php/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/m-stilling/minecraft-rcon-php/actions/workflows/tests.yml) [![Packagist Version](https://img.shields.io/packagist/v/stilling/minecraft-rcon)](https://packagist.org/packages/stilling/minecraft-rcon)
 
-Lightweight Minecraft RCON client supporting multi-packet responses. Based on [PHP-Minecraft-Rcon](https://github.com/thedudeguy/PHP-Minecraft-Rcon) by [thedudeguy](https://github.com/thedudeguy).
+Lightweight PHP client for Minecraft RCON with support for multi-packet responses. `sendCommand()` returns the full output of a command, also when the output is longer than 4096 bytes. Based on [PHP-Minecraft-Rcon](https://github.com/thedudeguy/PHP-Minecraft-Rcon) by [thedudeguy](https://github.com/thedudeguy).
 
 ```
 composer require stilling/minecraft-rcon
@@ -25,6 +25,10 @@ $rcon->disconnect();
 ```
 
 `sendCommand()` returns the response from the server as a string.
+
+## Large responses
+
+Minecraft splits a response that is longer than 4096 bytes into several packets. `sendCommand()` reads all the packets of the response and joins them, so the output is not truncated. Commands such as `help` and `data get entity <player>` can give responses of this size.
 
 ## Constructor arguments
 
