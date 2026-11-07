@@ -2,7 +2,7 @@
 	"$schema": "https://getcomposer.org/schema.json",
 	"name": "stilling/minecraft-rcon",
 	"description": "Lightweight Minecraft RCON client supporting multi-packet responses.",
-	"keywords": ["minecraft", "rcon", "rcon-client", "minecraft-server"],
+	"keywords": ["minecraft", "rcon", "rcon client", "minecraft server", "source rcon", "remote console"],
 	"homepage": "https://github.com/m-stilling/minecraft-rcon-php",
 	"license": "MIT",
 	"authors": [
